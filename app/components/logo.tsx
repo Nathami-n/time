@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { BookIcon, Clock12Icon } from "lucide-react";
+import {Clock12Icon } from "lucide-react";
 import { cn } from "~/lib/utils";
 
 

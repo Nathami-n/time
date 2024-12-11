@@ -29,8 +29,13 @@ import {
     DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 
-export function UserModal({ children }: {
-    children: React.ReactNode
+export function UserModal({ children, user }: {
+    children: React.ReactNode,
+    user: {
+        name: string;
+        email: string;
+        userId: string;
+    }
 }) {
     return (
         <DropdownMenu>
@@ -38,7 +43,7 @@ export function UserModal({ children }: {
                 {children}
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem>
