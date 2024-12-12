@@ -57,7 +57,7 @@ const data = {
                 },
                 {
                     title: "Admins",
-                    url: "/dashboard/admins",
+                    url: "/admin",
                     icon: KeyIcon
                 },
             ],

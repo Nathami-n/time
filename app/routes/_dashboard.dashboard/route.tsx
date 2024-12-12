@@ -4,7 +4,7 @@ import { useLoaderData } from "@remix-run/react";
 import { db } from "~/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
-import { User, Building } from "lucide-react";
+import { User, Building, BookA, KeyIcon } from "lucide-react";
 import { Component } from "./components/charts/radial";
 import { Doughnut } from "./components/charts/gradient";
 
@@ -16,20 +16,20 @@ export const loader: LoaderFunction = async () => {
     const teacherCount = await db.teacher.count();
     const departmentCount = await db.department.count();
     const studentCount = await db.student.count();
+    const adminCount = await db.administrator.count();
 
-    return Response.json({ teachers: teacherCount, departments: departmentCount, students: studentCount });
+    return Response.json({ teachers: teacherCount, departments: departmentCount, students: studentCount, admins: adminCount });
 };
 
 // Admin Dashboard Component
 export default function AdminDashboard() {
     const data = useLoaderData<typeof loader>();
-
     const chartData = [
         { name: "Lecturers", value: data.teachers, fill: "hsl(var(--chart-2))" },
         { name: "Departments", value: data.departments, fill: "hsl(var(--chart-1))" },
-        {name: "Students", value: data.students, fill: "hsl(var(--chart-4))"}
+        { name: "Students", value: data.students, fill: "hsl(var(--chart-4))" },
+        { name: "Admins", value: data.admins, fill: "hsl(var(--chart-5))" }
     ];
-
     return (
         <div className="p-4  h-screen">
             <Card className="bg-gray-100/10">
@@ -57,7 +57,24 @@ export default function AdminDashboard() {
                                 <Building size={30} className="stroke-green-500" />
                             </div>
                         </Card>
-
+                        <Card className="flex p-4 shadow-sm justify-between gap-x-2 items-center md:w-40 md:h-20">
+                            <div className="flex flex-col">
+                                <CardDescription>Students</CardDescription>
+                                <CardTitle>{data.students}</CardTitle>
+                            </div>
+                            <div className=" border rounded-lg p-2 flex items-center justify-center">
+                                <BookA size={30} className="stroke-yellow-500" />
+                            </div>
+                        </Card>
+                        <Card className="flex p-4 shadow-sm justify-between gap-x-2 items-center md:w-40 md:h-20">
+                            <div className="flex flex-col">
+                                <CardDescription>Admins</CardDescription>
+                                <CardTitle>{data.admins}</CardTitle>
+                            </div>
+                            <div className=" border rounded-lg p-2 flex items-center justify-center">
+                                <KeyIcon size={30} className="stroke-yellow-500" />
+                            </div>
+                        </Card>
                     </div>
                 </CardContent>
             </Card>

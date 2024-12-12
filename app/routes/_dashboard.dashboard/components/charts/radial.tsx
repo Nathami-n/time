@@ -31,19 +31,23 @@ const chartConfig = {
         label: "Departments",
         color: "hsl(var(--chart-1))",
     },
+    Admins: {
+        label: "Admins",
+        color: "hsl(var(--chart-5))"
+    }
 } satisfies ChartConfig;
 
 export function Component({
     chartData
-}:{
-    chartData: Array<{name: string, value: number, fill: string}>
+}: {
+    chartData: Array<{ name: string, value: number, fill: string }>
 }) {
     return (
         <Card className="flex flex-col">
             <CardHeader className="items-center pb-0">
-            <CardTitle>Pie Chart - 
-                Radial         </CardTitle>
-            <CardDescription>A radial representaion of the data</CardDescription>
+                <CardTitle>Pie Chart -
+                    Radial         </CardTitle>
+                <CardDescription>A radial representaion of the data</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 pb-0">
                 <ChartContainer
