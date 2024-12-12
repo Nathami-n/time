@@ -18,10 +18,7 @@ import {
     ChartTooltipContent,
 } from "~/components/ui/chart";
 
-const chartData = [
-    { name: "Lecturers", value: 275, fill: "hsl(var(--chart-2))" },
-    { name: "Departments", value: 200, fill: "hsl(var(--chart-1))" },
-];
+
 
 const chartConfig = {
     Lecturers: {
@@ -35,7 +32,11 @@ const chartConfig = {
     },
 } satisfies ChartConfig;
 
-export function Component() {
+export function Component({
+    chartData
+}:{
+    chartData: Array<{name: string, value: number, fill: string}>
+}) {
     return (
         <Card className="flex flex-col">
             <CardHeader className="items-center pb-0">

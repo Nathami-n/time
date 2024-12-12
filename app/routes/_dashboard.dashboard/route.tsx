@@ -3,9 +3,10 @@ import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { db } from "~/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Bar } from "recharts";
+
 import { User, Building } from "lucide-react";
-import { Component } from "../test";
+import { Component } from "./components/charts/radial";
+import { GradientChart } from "./components/charts/gradient";
 
 // Loader Function
 export const loader: LoaderFunction = async () => {
@@ -22,18 +23,10 @@ export const loader: LoaderFunction = async () => {
 export default function AdminDashboard() {
     const data = useLoaderData<typeof loader>();
 
-    const chartData = {
-        labels: ["Teachers", "Departments"],
-        datasets: [
-            {
-                label: "Count",
-                data: [data.teachers, data.departments],
-                backgroundColor: ["#FF6384", "#36A2EB"],
-                borderColor: ["#FF6384", "#36A2EB"],
-                borderWidth: 1,
-            },
-        ],
-    };
+    const chartData = [
+        { name: "Lecturers", value: data.teachers, fill: "hsl(var(--chart-2))" },
+        { name: "Departments", value: data.departments, fill: "hsl(var(--chart-1))" },
+    ];
 
     return (
         <div className="p-4  h-screen">
@@ -71,10 +64,14 @@ export default function AdminDashboard() {
                     <CardTitle>Statistics</CardTitle>
                     <CardDescription>Graphical representation of data</CardDescription>
                 </CardHeader>
-                <CardContent className="flex items-center">
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
                         <CardTitle className="mb-4">Radial chart</CardTitle>
-                        <Component />
+                        <Component chartData={chartData} />
+                    </div>
+                    <div className="flex flex-col">
+                        <CardTitle className="mb-4">Gradient Chart</CardTitle>
+                        <GradientChart />
                     </div>
                 </CardContent>
             </Card>
