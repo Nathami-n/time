@@ -37,89 +37,32 @@ export function UserModal({ children, user }: {
         userId: string;
     }
 }) {
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 {children}
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
+                <div className="flex flex-col items-start p-1">
+                    <p className="font-medium text-md">{user.name}</p>
+                    <p className="text-muted-foreground text-sm">{user.email}</p>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem>
                         <User />
                         <span>Profile</span>
-                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <CreditCard />
-                        <span>Billing</span>
-                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         <Settings />
                         <span>Settings</span>
-                        <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <Keyboard />
-                        <span>Keyboard shortcuts</span>
-                        <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                        <Users />
-                        <span>Team</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                            <UserPlus />
-                            <span>Invite users</span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuPortal>
-                            <DropdownMenuSubContent>
-                                <DropdownMenuItem>
-                                    <Mail />
-                                    <span>Email</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <MessageSquare />
-                                    <span>Message</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem>
-                                    <PlusCircle />
-                                    <span>More...</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuSubContent>
-                        </DropdownMenuPortal>
-                    </DropdownMenuSub>
-                    <DropdownMenuItem>
-                        <Plus />
-                        <span>New Team</span>
-                        <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    <Github />
-                    <span>GitHub</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                    <LifeBuoy />
-                    <span>Support</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                    <Cloud />
-                    <span>API</span>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                     <LogOut />
                     <span>Log out</span>
-                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

@@ -1,11 +1,20 @@
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet, redirect, useLoaderData } from "@remix-run/react";
 import { AppSidebar } from "./components/sidebar";
 import Header from "./components/header";
 import { LoaderFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { userCookie } from "~/lib/user-session";
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
-  const user = userCookie.parse(request.headers.get("cookie"));
+  const user = await userCookie.parse(request.headers.get("cookie"));
+  if (!user) {
+    return redirect("/login", {
+      headers: {
+        "Set-Cookie": await userCookie.serialize({}, {
+          maxAge: 0
+        })
+      }
+    });
+  }
   return Response.json({
     user
   })
@@ -13,6 +22,7 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 
 export default function DashBoardLayout() {
   const { user } = useLoaderData<{ user: { name: string, email: string, userId: string } }>();
+
   return (
     <div className="w-full h-full md:flex">
       <AppSidebar />

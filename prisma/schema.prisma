@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -31,10 +25,40 @@ model Administrator {
 }
 
 model Teacher {
-  id       String @id @default(cuid())
-  name     String
-  email    String @unique
-  password String
-  staff_no String @unique
-  role     String @default("Teacher")
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  password     String
+  unitId       String
+  unit         Unit        @relation(fields: [unitId], references: [id])
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  staff_no     String      @unique
+  role         String      @default("Teacher")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  Department   Department? @relation("headship")
+}
+
+model Unit {
+  id           String     @id @default(cuid())
+  name         String
+  unit_code    String     @unique
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  Teacher      Teacher[]
+}
+
+model Department {
+  id               String    @id @default(cuid())
+  name             String @unique
+  established      DateTime
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  departmentHeadId String?   @unique
+  departmentHead   Teacher?  @relation("headship", fields: [departmentHeadId], references: [id])
+  Unit             Unit[]
+  Teacher          Teacher[]
 }

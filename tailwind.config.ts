@@ -5,7 +5,9 @@ export default {
   content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
-      fontFamily: {},
+      fontFamily: {
+        flex: ["Roboto Flex", "sans serif"]
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

@@ -30,7 +30,7 @@ export default function Header({
                         <BreadcrumbList>
                             {array.map(link => (
                                 <><BreadcrumbItem key={link}>
-                                    <BreadcrumbLink href={link}>
+                                    <BreadcrumbLink href={link == "dashboard" ? "/dashboard" : link}>
                                         {link}
                                     </BreadcrumbLink>
                                 </BreadcrumbItem>

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@remix-run/react"
-import { BookAIcon, Calendar1Icon, KeyIcon, LogOutIcon, Settings2, User2, UserIcon } from "lucide-react"
+import { BookAIcon, Calendar1Icon, KeyIcon, LogOutIcon, PlusCircle, PlusIcon, Settings2, User2, UserIcon } from "lucide-react"
 import * as React from "react"
 import { Logo } from "~/components/logo"
 import { Separator } from "~/components/ui/separator"
@@ -25,10 +25,16 @@ const data = {
             title: "Timetables",
             items: [
                 {
-                    title: "Current",
+                    title: "History",
                     url: "/dashboard",
                     icon: Calendar1Icon
                 },
+                {
+                    title: "Create",
+                    url: "/create",
+                    icon: PlusCircle
+                }
+
             ],
         },
         {
@@ -36,7 +42,7 @@ const data = {
             items: [
                 {
                     title: "Academia",
-                    url: "/dashboard/academia",
+                    url: "/academia",
                     icon: BookAIcon
                 },
                 {
@@ -46,7 +52,7 @@ const data = {
                 },
                 {
                     title: "Teachers",
-                    url: "/dashboard/teachers",
+                    url: "/teachers",
                     icon: UserIcon
                 },
                 {
@@ -84,9 +90,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                             <Link
                                                 to={item.url}
                                                 className={cn("flex hover:bg-primary/10 transition-colors items-center text-muted-foreground gap-x-1",
-                                                item.url === path && "!hover:none bg-primary/20 text-primary"
+                                                    item.url === path && "!hover:none bg-primary/20 text-primary"
                                                 )}>
-                                                <item.icon  size={20} /> <span >{item.title}</span></Link>
+                                                <item.icon size={20} /> <span >{item.title}</span></Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
@@ -100,17 +106,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenu>
                             <SidebarMenuItem>
                                 <SidebarMenuButton className="w-full" asChild>
-                                    <Link to="/logout" className="flex hover:bg-primary/10 transition-colors items-center gap-x-1">
-                                        <LogOutIcon size={20} className="text-muted-foreground" />
-                                        <span className="text-muted-foreground">Logout</span>
+                                    <Link to="/dashboard/settings" className={cn("flex hover:bg-primary/10 transition-colors items-center text-muted-foreground gap-x-1",
+                                        "/dashboard/settings" === path && "!hover:none bg-primary/20 text-primary"
+                                    )}>
+                                        <Settings2 size={20} className="text-muted-foreground" />
+                                        <span className="text-muted-foreground">Settings</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
                                 <SidebarMenuButton className="w-full" asChild>
-                                    <Link to="/dashboard/settings" className="flex hover:bg-primary/10 transition-colors items-center gap-x-1">
-                                        <Settings2 size={20} className="text-muted-foreground" />
-                                        <span className="text-muted-foreground">Settings</span>
+                                    <Link to="/logout" className={cn("flex hover:bg-primary/10 transition-colors items-center text-muted-foreground gap-x-1",
+                                        "/logout" === path && "!hover:none bg-primary/20 text-primary"
+                                    )}>
+                                        <LogOutIcon size={20} className="text-muted-foreground" />
+                                        <span className="text-muted-foreground">Logout</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
