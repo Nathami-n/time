@@ -93,6 +93,8 @@ export default function TeacherForm() {
                 return;
 
             }
+
+            toast.success("Created teacher successfully")
         }
         catch (error) {
             toast.error("Error creating teacher");
