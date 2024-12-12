@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 
 import { User, Building } from "lucide-react";
 import { Component } from "./components/charts/radial";
-import { GradientChart } from "./components/charts/gradient";
+import { Doughnut } from "./components/charts/gradient";
 
 // Loader Function
 export const loader: LoaderFunction = async () => {
@@ -15,8 +15,9 @@ export const loader: LoaderFunction = async () => {
     }
     const teacherCount = await db.teacher.count();
     const departmentCount = await db.department.count();
+    const studentCount = await db.student.count();
 
-    return Response.json({ teachers: teacherCount, departments: departmentCount });
+    return Response.json({ teachers: teacherCount, departments: departmentCount, students: studentCount });
 };
 
 // Admin Dashboard Component
@@ -26,6 +27,7 @@ export default function AdminDashboard() {
     const chartData = [
         { name: "Lecturers", value: data.teachers, fill: "hsl(var(--chart-2))" },
         { name: "Departments", value: data.departments, fill: "hsl(var(--chart-1))" },
+        {name: "Students", value: data.students, fill: "hsl(var(--chart-4))"}
     ];
 
     return (
@@ -66,12 +68,10 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                        <CardTitle className="mb-4">Radial chart</CardTitle>
                         <Component chartData={chartData} />
                     </div>
                     <div className="flex flex-col">
-                        <CardTitle className="mb-4">Gradient Chart</CardTitle>
-                        <GradientChart />
+                        <Doughnut chartData={chartData} />
                     </div>
                 </CardContent>
             </Card>

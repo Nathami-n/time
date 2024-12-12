@@ -1,17 +1,16 @@
-import { string, z } from "zod";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { z } from "zod";
+import { useFetcher } from "@remix-run/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldValues, useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { toast } from "sonner";
-import { ActionFunctionArgs, LoaderFunction, ActionFunction } from "@remix-run/node";
+import { ActionFunctionArgs, ActionFunction } from "@remix-run/node";
 import { db } from "~/lib/db";
-import { prismaKnownErrorrs } from "~/lib/errors";
 import { Prisma } from "@prisma/client";
+import { prismaKnownErrorrs } from "~/lib/errors";
 import bcrypt from "bcrypt";
 
 
@@ -19,61 +18,28 @@ const teacherSchema = z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email"),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    department: z.string().min(1, "Deparment is required"),
-    staff_no: z.string().min(1, "Deparment is required"),
-    unit: z.string().min(1, "Deparment is required"),
+    reg_no: z.string().min(1, "Deparment is required"),
 })
 
-export const loader: LoaderFunction = async () => {
-    if (!db) {
-        throw new Error("Database connection is not available.");
-    }
-    const [departments, units] = await db.$transaction([
-        db.department.findMany({
-            where: {
-                departmentHeadId: null
-            },
-            select: {
-                id: true,
-                name: true,
-                established: true,
-                createdAt: true,
-                updatedAt: true
-            }
-        }),
-        db.unit.findMany({
-            select: {
-                id: true,
-                name: true,
-            }
-        })
-    ]);
-    return Response.json({ departments, units });
-}
 export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const data = Object.fromEntries(formData.entries());
 
-    const { name, email, password, department, staff_no, unit } = data;
+    const { name, email, password, reg_no } = data;
     const hashedPassword = await bcrypt.hash(String(password), 10);
-
     try {
-        await db?.teacher.create({
+        await db?.student.create({
             data: {
-                name: name as string, staff_no: staff_no as string, email: email as string,
-                unit: {
-                    connect: {
-                        id: unit as string
-                    }
-                },
+                name: name as string,
+                reg_no: reg_no as string,
+                email: email as string,
                 password: hashedPassword as string,
-                department: { connect: { id: department as string } }
             },
         });
-        return Response.json({ success: true }, { status: 201 })
+        return new Response(JSON.stringify({ success: true, error: null }), { status: 201 });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        console.error("Failed to create Teacher:", error);
+        console.error("Failed to create student:", error);
         let message = "An error occurred.";
         let code = 500;
         switch (error.constructor) {
@@ -108,34 +74,32 @@ export const action: ActionFunction = async ({ request }: ActionFunctionArgs) =>
         return Response.json({ error: message, success: false }, { status: code });
 
     }
-}
+};
 
-export default function TeacherForm() {
-    const { departments, units } = useLoaderData<typeof loader>();
+export default function StudentsPage() {
     const fetcher = useFetcher();
 
     const form = useForm({ resolver: zodResolver(teacherSchema) });
 
     async function onSubmit(values: FieldValues) {
-        console.log(values)
         try {
             fetcher.submit(values,
                 {
                     method: "post",
-                    action: "/teachers",
+                    action: "/students",
                 });
 
             const data = fetcher.data as { success: boolean, error: string }
+            console.log(data)
             if (!data?.success) {
-                toast.error("Error creating teacher");
+                toast.error(data.error);
                 return;
 
             }
-
-            toast.success("Created teacher successfully")
+            toast.success("Created student successfully")
         }
         catch (error) {
-            toast.error("Error creating teacher");
+            toast.error("Error creating student");
             return;
         }
     }
@@ -147,8 +111,8 @@ export default function TeacherForm() {
             <Form {...form}>
                 <Card className="shadow-sm mt-10 max-w-4xl ">
                     <CardHeader>
-                        <CardTitle>Teacher details</CardTitle>
-                        <CardDescription>Add the relevant details of the teacher</CardDescription>
+                        <CardTitle>Student details</CardTitle>
+                        <CardDescription>Add the relevant details of the Student</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={form.handleSubmit(onSubmit)}  >
@@ -196,11 +160,11 @@ export default function TeacherForm() {
                                     )}
                                 />
                                 <FormField
-                                    name="staff_no"
+                                    name="reg_no"
                                     control={form.control}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Staff no</FormLabel>
+                                            <FormLabel>Reg no</FormLabel>
                                             <FormControl>
                                                 <Input className="text-sm" type="text" placeholder="HSL-222" {...field} />
                                             </FormControl>
@@ -208,48 +172,6 @@ export default function TeacherForm() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    name="department"
-                                    control={form.control}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Department</FormLabel>
-                                            <FormControl>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="department" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {departments.map((department: { id: string; name: string }) => (<SelectItem key={department.id} value={department.id}> {department.name} </SelectItem>))}
-                                                    </SelectContent>
-
-                                                </Select>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    name="unit"
-                                    control={form.control}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Unit</FormLabel>
-                                            <FormControl>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="unit" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {units.map((unit: { id: string; name: string }) => (<SelectItem key={unit.id} value={unit.id}> {unit.name} </SelectItem>))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
                             </div>
                             <div className="mt-4">
                                 <Button

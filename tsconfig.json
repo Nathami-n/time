@@ -20,6 +20,7 @@
     "strict": true,
     "allowJs": true,
     "skipLibCheck": true,
+    "typeRoots": ["./bcrypt.d.ts", "./node_modules/@types"],
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {

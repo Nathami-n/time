@@ -47,7 +47,7 @@ const data = {
                 },
                 {
                     title: "Students",
-                    url: "/dashboard/students",
+                    url: "/students",
                     icon: User2
                 },
                 {

@@ -1,12 +1,14 @@
 
 
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-
+import { TrendingUp } from "lucide-react";
+import { Pie, PieChart, Sector } from "recharts";
 import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
+    CardTitle,
 } from "~/components/ui/card";
 import {
     ChartConfig,
@@ -15,90 +17,59 @@ import {
     ChartTooltipContent,
 } from "~/components/ui/chart";
 
-const chartData = [
-    { type: "count", lecturers: 4, students: 80 },
-];
 
 const chartConfig = {
     lecturers: {
         label: "Lecturers",
-        color: "hsl(var(--chart-1))",
-    },
-    students: {
-        label: "Students",
         color: "hsl(var(--chart-2))",
+    },
+    departments: {
+        label: "Departments",
+        color: "hsl(var(--chart-1))",
     },
 } satisfies ChartConfig;
 
-export function GradientChart() {
+export function Doughnut({
+    chartData
+}: {
+    chartData: Array<{ name: string, value: number, fill: string }>
+}) {
     return (
-        <Card>
-            <CardHeader>
-                <CardDescription>
-                    Showing total count for organisational data
-                </CardDescription>
+        <Card className="flex flex-col">
+            <CardHeader className="items-center pb-0">
+                <CardTitle>Pie Chart - Donut Active</CardTitle>
+                <CardDescription>A donut representaion of the data</CardDescription>
             </CardHeader>
-            <CardContent>
-                <ChartContainer config={chartConfig}>
-                    <AreaChart
-                        data={chartData}
-                        margin={{ left: 12, right: 12 }}
-                    >
-                        <CartesianGrid vertical={false} />
-                        <XAxis
-                            dataKey="type"
-                            tickLine={false}
-                            axisLine={false}
-                            tickMargin={8}
-                            tickFormatter={(value) => value}
-                        />
+            <CardContent className="flex-1 pb-0">
+                <ChartContainer
+                    config={chartConfig}
+                    className="mx-auto aspect-square max-h-[250px]"
+                >
+                    <PieChart>
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent />}
+                            content={<ChartTooltipContent hideLabel />}
                         />
-                        <defs>
-                            <linearGradient id="fillLecturers" x1="0" y1="0" x2="0" y2="1">
-                                <stop
-                                    offset="5%"
-                                    stopColor="hsl(var(--chart-1))"
-                                    stopOpacity={0.8}
-                                />
-                                <stop
-                                    offset="95%"
-                                    stopColor="hsl(var(--chart-1))"
-                                    stopOpacity={0.1}
-                                />
-                            </linearGradient>
-                            <linearGradient id="fillStudents" x1="0" y1="0" x2="0" y2="1">
-                                <stop
-                                    offset="5%"
-                                    stopColor="hsl(var(--chart-2))"
-                                    stopOpacity={0.8}
-                                />
-                                <stop
-                                    offset="95%"
-                                    stopColor="hsl(var(--chart-2))"
-                                    stopOpacity={0.1}
-                                />
-                            </linearGradient>
-                        </defs>
-                        <Area
-                            dataKey="lecturers"
-                            type="natural"
-                            fill="url(#fillLecturers)"
-                            stroke="hsl(var(--chart-1))"
-                            stackId="a"
+                        <Pie
+                            data={chartData}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius={60}
+                            strokeWidth={5}
+                            activeIndex={0}
+                            activeShape={(props) => (
+                                <Sector {...props} outerRadius={(props.outerRadius || 0) + 10} />
+                            )}
                         />
-                        <Area
-                            dataKey="students"
-                            type="natural"
-                            fill="url(#fillStudents)"
-                            stroke="hsl(var(--chart-2))"
-                            stackId="a"
-                        />
-                    </AreaChart>
+                    </PieChart>
                 </ChartContainer>
             </CardContent>
+            <CardFooter className="flex-col gap-2 text-sm">
+                <div className="leading-none text-muted-foreground">
+                    Showing total data count for the entire period
+                </div>
+            </CardFooter>
+
         </Card>
     );
 }

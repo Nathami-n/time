@@ -1,6 +1,4 @@
-"use client";
 
-import { TrendingUp } from "lucide-react";
 import { LabelList, RadialBar, RadialBarChart } from "recharts";
 
 import {
@@ -25,7 +23,10 @@ const chartConfig = {
         label: "Lecturers",
         color: "hsl(var(--chart-2))",
     },
-
+    Students: {
+        label: "Students",
+        color: "hsl(var(--chart-4))"
+    },
     Departments: {
         label: "Departments",
         color: "hsl(var(--chart-1))",
@@ -40,7 +41,9 @@ export function Component({
     return (
         <Card className="flex flex-col">
             <CardHeader className="items-center pb-0">
-                <CardDescription>Overview of current counts</CardDescription>
+            <CardTitle>Pie Chart - 
+                Radial         </CardTitle>
+            <CardDescription>A radial representaion of the data</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 pb-0">
                 <ChartContainer
