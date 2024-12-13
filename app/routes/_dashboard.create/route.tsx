@@ -1,11 +1,17 @@
 import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { days } from "~/lib/data";
 import { db } from "~/lib/db";
 import { cn } from "~/lib/utils";
-import { Clock, User } from "lucide-react";
+import { Clock, FileIcon, FileScanIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import jsfPdf from "jspdf";
+import html2canvas from "html2canvas";
+import { Popover, PopoverContent } from "~/components/ui/popover";
+import { PopoverTrigger } from "@radix-ui/react-popover";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 
 type TimetableSlot = {
     day: string;
@@ -106,11 +112,63 @@ export default function CreateTimeTable() {
     const { timetable } = useLoaderData<typeof loader>();
     const slots = [1, 2, 3, 4];
 
-    console.log(timetable)
+    // console.log(timetable)
+    async function generatePDF() {
+        const element = document.getElementById("printable")!;
+        document.documentElement.style.backgroundColor = "#fff";
+
+        html2canvas(element).then((canvas) => {
+            const pdf = new jsfPdf();
+            const imgData = canvas.toDataURL("image/png");
+
+            const imgWidth = 210; // NOTE: THIS IS THE NEW HEIGHT WE NEED IN THE PDF IN MM
+            const pageHeight = 297; // NOTE: this is the page height to look at
+
+            /** 
+             * this is where we scale down the screenshot using the scale fomula that goes this way:
+             * original width/original height = new width/new height
+             * it follows then that the new height = original height * new width / original width
+             */
+
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+
+            let position = 0;
+
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+
+            heightLeft -= pageHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight; // get the correct vertical offset of the next page to start the next content
+                pdf.addPage();
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            pdf.save("timetable.pdf")
+        })
+    }
 
     return (
         <div className="p-4">
-            <Card className="overflow-hidden">
+            <div className="flex items-center justify-end pr-4  mb-4">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant={"secondary"} className="text-xs"><FileScanIcon />Export</Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-[250px]">
+                        <div className="mt-2">
+                            <Button
+                                onClick={generatePDF}
+                                variant={"ghost"} className="flex items-center !p-1 justify-start w-full gap-x-3">
+                                <FileIcon size={16} className="stroke-primary" /> <span className="text-sm text-muted-foreground">Export as pdf</span>
+                            </Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+            </div>
+            <Card className="overflow-hidden" id="printable">
                 <CardHeader className="flex justify-between items-center  p-4">
                     <div>
                         <CardTitle className="text-xl font-bold">Generated Timetable</CardTitle>
@@ -140,7 +198,7 @@ export default function CreateTimeTable() {
                                                             <AvatarImage className="cursor-pointer" src="https://wallpapers.com/images/featured/red-heart-dxixrd7pyw9vm4hu.jpg" alt="user" />
                                                             <AvatarFallback className="cursor-pointer">US</AvatarFallback>
                                                         </Avatar>
-                                                        <p className="text-sm">Teacher: <a href={`/teachers/${item.teacher.id}`} className="text-blue-500 underline">{item.teacher.name}</a></p>
+                                                        <p className="text-sm">Teacher: <a href={`/teacher/${item.teacher.id}`} className="text-blue-500 underline">{item.teacher.name}</a></p>
                                                     </div>
                                                 </>
                                             ) : (
