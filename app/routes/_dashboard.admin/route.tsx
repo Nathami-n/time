@@ -11,7 +11,7 @@ import { ActionFunctionArgs, ActionFunction } from "@remix-run/node";
 import { db } from "~/lib/db";
 import { Prisma } from "@prisma/client";
 import { prismaKnownErrorrs } from "~/lib/errors";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 
 const AdminSchema = z.object({

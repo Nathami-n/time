@@ -12,7 +12,8 @@ import { ActionFunctionArgs, LoaderFunction, ActionFunction } from "@remix-run/n
 import { db } from "~/lib/db";
 import { prismaKnownErrorrs } from "~/lib/errors";
 import { Prisma } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
+import { DataTable } from "~/components/tables/table";
 
 
 const teacherSchema = z.object({
@@ -28,7 +29,7 @@ export const loader: LoaderFunction = async () => {
     if (!db) {
         throw new Error("Database connection is not available.");
     }
-    const [departments, units] = await db.$transaction([
+    const [departments, units, teachers] = await db.$transaction([
         db.department.findMany({
             where: {
                 departmentHeadId: null
@@ -46,9 +47,32 @@ export const loader: LoaderFunction = async () => {
                 id: true,
                 name: true,
             }
+        }),
+        db.teacher.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                department: true,
+                unit: true,
+                staff_no: true,
+            }
         })
     ]);
-    return Response.json({ departments, units });
+
+    const formatedTeachers = [];
+    for (const teacher of teachers) {
+        const formartedTeacher = {
+            id: teacher.id,
+            name: teacher.name,
+            email: teacher.email,
+            staff_no: teacher.staff_no,
+            department: teacher?.department?.name as string,
+            unit: teacher.unit.name
+        };
+        formatedTeachers.push(formartedTeacher);
+    }
+    return Response.json({ departments, units, teachers: formatedTeachers });
 }
 export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
@@ -111,7 +135,7 @@ export const action: ActionFunction = async ({ request }: ActionFunctionArgs) =>
 }
 
 export default function TeacherForm() {
-    const { departments, units } = useLoaderData<typeof loader>();
+    const { departments, units, teachers } = useLoaderData<typeof loader>();
     const fetcher = useFetcher();
 
     const form = useForm({ resolver: zodResolver(teacherSchema) });
@@ -260,6 +284,17 @@ export default function TeacherForm() {
                     </CardContent>
                 </Card>
             </Form>
+
+            <div className=" mt-5">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>All teachers</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <DataTable data={teachers} />
+                    </CardContent>
+                </Card>
+            </div>
         </div >
     );
 }
