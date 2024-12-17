@@ -8,12 +8,24 @@ datasource db {
 }
 
 model Student {
-  id       String @id @default(cuid())
-  name     String
-  email    String @unique
-  password String
-  reg_no   String @unique
-  role     String @default("Student")
+  id          String        @id @default(cuid())
+  name        String
+  email       String        @unique
+  password    String
+  reg_no      String        @unique
+  role        String        @default("Student")
+  StudentUnit StudentUnit[]
+}
+
+model StudentUnit {
+  studentId  String
+  unitId     String
+  enrolledAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id])
+  unit    Unit    @relation(fields: [unitId], references: [id])
+
+  @@id([studentId, unitId]) // composite key
 }
 
 model Administrator {
@@ -41,19 +53,20 @@ model Teacher {
 }
 
 model Unit {
-  id           String     @id @default(cuid())
+  id           String        @id @default(cuid())
   name         String
-  unit_code    String     @unique
+  unit_code    String        @unique
   departmentId String
-  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  department   Department    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   Teacher      Teacher[]
+  StudentUnit  StudentUnit[]
 }
 
 model Department {
   id               String    @id @default(cuid())
-  name             String @unique
+  name             String    @unique
   established      DateTime
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

@@ -46,6 +46,7 @@ export const Schemas = {
         password: z.string().min(6, "Password cannot be less than 6 characters"),
     }),
     admin: z.object({
-        auth_code: z.string().min(6, "Auth code cannot be less than 6 characters")
+        auth_code: z.string().min(6, "Auth code cannot be less than 6 characters"),
+        email: z.string().min(1, "Email needed").email({message: "Invalid email"}),
     })
 }

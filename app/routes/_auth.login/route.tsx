@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { FieldValues, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z, ZodSchema } from "zod";
+import { ZodSchema } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { Label } from "~/components/ui/label";
@@ -15,7 +15,7 @@ import { userCookie } from "~/lib/user-session";
 import { Loader2Icon, LockKeyholeIcon, LockOpen } from "lucide-react";
 import { PossibleUsers } from "types/types";
 import { Schemas } from "~/lib/zod";
-
+import bcrypt from "bcryptjs";
 export async function action({ request }: ActionFunctionArgs) {
     try {
         const { intent, data } = await request.json();
@@ -23,12 +23,17 @@ export async function action({ request }: ActionFunctionArgs) {
             case PossibleUsers.ADMIN: {
                 const admin = await db?.administrator.findFirst({
                     where: {
-                        auth_code: data.auth_code
+                        email: data.email,
                     }
                 });
                 if (!admin) {
                     throw new Error("Admin not found")
                 }
+                const isCorrectPassword = await bcrypt.compare(data.auth_code, admin.auth_code);
+                if (!isCorrectPassword) {
+                    throw new Error("Invalid credentials, please contact support");
+                }
+
                 return redirect("/dashboard", {
                     headers: {
                         "Set-Cookie": await userCookie.serialize({ name: admin.name, email: admin.email, id: admin.id })
@@ -40,11 +45,14 @@ export async function action({ request }: ActionFunctionArgs) {
                 const student = await db?.student.findFirst({
                     where: {
                         reg_no: data.reg_no,
-                        password: data.password
                     }
                 });
                 if (!student) {
                     throw new Error("Student not found")
+                }
+                const isCorrectPassword = await bcrypt.compare(data.password, student.password);
+                if (!isCorrectPassword) {
+                    throw new Error("Invalid credentials, please contact support");
                 }
                 return redirect("/student", {
                     headers: {
@@ -56,11 +64,14 @@ export async function action({ request }: ActionFunctionArgs) {
                 const teacher = await db?.teacher.findFirst({
                     where: {
                         staff_no: data.reg_no,
-                        password: data.password
                     }
                 });
                 if (!teacher) {
-                    throw new Error("Teacher not found")
+                    throw new Error("Teacher not found");
+                }
+                const isCorrectPassword = await bcrypt.compare(data.password, teacher.password);
+                if (!isCorrectPassword) {
+                    throw new Error("Invalid credentials, please contact support");
                 }
                 return redirect("/teacher", {
                     headers: {
@@ -134,9 +145,24 @@ export default function LoginPage() {
                 </TabsList>
                 <TabsContent value={PossibleUsers.ADMIN}>
                     <Form {...form}>
-                        <RemixForm className="border p-4 rounded-lg" onSubmit={form.handleSubmit(onSubmit)}>
+                        <RemixForm className="border p-4 rounded-lg space-y-2" onSubmit={form.handleSubmit(onSubmit)}>
                             <FormLabel>Admin</FormLabel>
-                            <FormDescription>Please enter the auth code to proceed</FormDescription>
+                            <FormDescription>Please enter the auth code and email to proceed</FormDescription>
+                            <FormField
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Label htmlFor="email" className="relative">
+                                                <Input type={"email"} id="email" {...field}
+                                                    className="placeholder:text-xs text-sm"
+                                                    placeholder="Admin email" />
+                                            </Label>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                             <FormField
                                 name="auth_code"
                                 render={({ field }) => (
@@ -258,16 +284,16 @@ export default function LoginPage() {
                                                     <Input id="password" type={isOpen ? "text" : "password"} {...field}
                                                         className="placeholder:text-xs text-sm"
                                                         placeholder="***" />
-                                                         {
-                                                    isOpen ? (
-                                                        <LockOpen
-                                                            onClick={() => setIsOpen(false)}
-                                                            size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />
-                                                    ) : (
-                                                        <LockKeyholeIcon
-                                                            onClick={() => setIsOpen(true)}
-                                                            size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />)
-                                                }
+                                                    {
+                                                        isOpen ? (
+                                                            <LockOpen
+                                                                onClick={() => setIsOpen(false)}
+                                                                size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />
+                                                        ) : (
+                                                            <LockKeyholeIcon
+                                                                onClick={() => setIsOpen(true)}
+                                                                size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />)
+                                                    }
                                                 </Label>
                                             </FormControl>
                                             <FormMessage />
