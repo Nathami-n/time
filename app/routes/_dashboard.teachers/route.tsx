@@ -150,10 +150,10 @@ export default function TeacherForm() {
             if (data && !data?.success) {
                 toast.error("Error creating teacher");
                 return;
-
             }
 
             toast.success("Created teacher successfully")
+            form.reset();
         }
         catch (error) {
             toast.error("Error creating teacher");

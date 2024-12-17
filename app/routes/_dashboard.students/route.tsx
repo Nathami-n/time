@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldValues, useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "~/components/ui/form";
@@ -7,19 +7,17 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { toast } from "sonner";
-import { ActionFunctionArgs, ActionFunction } from "@remix-run/node";
+import { ActionFunctionArgs, ActionFunction, LoaderFunction } from "@remix-run/node";
 import { db } from "~/lib/db";
 import { Prisma } from "@prisma/client";
 import { prismaKnownErrorrs } from "~/lib/errors";
 import bcrypt from "bcryptjs";
+import { ApiResponseType } from "types/types";
+import { StudentTable } from "~/components/tables/student";
+import { studentSchema } from "~/lib/zod";
 
 
-const teacherSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Invalid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    reg_no: z.string().min(1, "Deparment is required"),
-})
+
 
 export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
@@ -76,10 +74,24 @@ export const action: ActionFunction = async ({ request }: ActionFunctionArgs) =>
     }
 };
 
+export const loader: LoaderFunction = async () => {
+    try {
+        const students = await db?.student.findMany();
+
+        return Response.json({ students }, { status: 200 });
+
+    } catch (e) {
+        console.error("error fetching students", e);
+        return Response.json({ error: "server error" }, { status: 500 });
+    }
+}
+
+
 export default function StudentsPage() {
     const fetcher = useFetcher();
+    const { students } = useLoaderData<typeof loader>();
 
-    const form = useForm({ resolver: zodResolver(teacherSchema) });
+    const form = useForm({ resolver: zodResolver(studentSchema) });
 
     async function onSubmit(values: FieldValues) {
         try {
@@ -89,9 +101,9 @@ export default function StudentsPage() {
                     action: "/students",
                 });
 
-            const data = fetcher.data as { success: boolean, error: string }
+            const data = fetcher.data as ApiResponseType
             console.log(data)
-            if (!data?.success) {
+            if (data && !data?.success) {
                 toast.error(data.error);
                 return;
 
@@ -182,6 +194,18 @@ export default function StudentsPage() {
                     </CardContent>
                 </Card>
             </Form>
+            <div className=" mt-5">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>All teachers</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <StudentTable
+                            data={students}
+                        />
+                    </CardContent>
+                </Card>
+            </div>
         </div >
     );
 }
