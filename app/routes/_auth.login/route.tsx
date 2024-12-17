@@ -36,7 +36,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
                 return redirect("/dashboard", {
                     headers: {
-                        "Set-Cookie": await userCookie.serialize({ name: admin.name, email: admin.email, id: admin.id })
+                        "Set-Cookie": await userCookie.serialize({ name: admin.name, email: admin.email, id: admin.id, role: admin.role.toLowerCase() })
                     }
                 });
             }
@@ -56,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
                 }
                 return redirect("/student", {
                     headers: {
-                        "Set-Cookie": await userCookie.serialize({ name: student.name, email: student.email, userId: student.id })
+                        "Set-Cookie": await userCookie.serialize({ name: student.name, email: student.email, userId: student.id, role: student.role.toLowerCase() })
                     }
                 });
             }
@@ -75,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
                 }
                 return redirect("/teacher", {
                     headers: {
-                        "Set-Cookie": await userCookie.serialize({ name: teacher.name, email: teacher.email, userId: teacher.id })
+                        "Set-Cookie": await userCookie.serialize({ name: teacher.name, email: teacher.email, userId: teacher.id, role: teacher.role.toLowerCase() })
                     }
                 });
             }

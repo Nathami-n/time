@@ -4,7 +4,14 @@ export type ApiResponseType = {
 };
 
 export const enum PossibleUsers {
-    STUDENT = "student",
-    STAFF = "staff",
-    ADMIN = "admin"
+  STUDENT = "student",
+  STAFF = "staff",
+  ADMIN = "admin",
 }
+
+export type AuthUserType = {
+  name: string;
+  email: string;
+  userId: string;
+  role: string;
+};
