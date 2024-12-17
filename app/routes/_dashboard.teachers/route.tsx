@@ -1,4 +1,4 @@
-import { string, z } from "zod";
+
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldValues, useForm } from "react-hook-form";
@@ -14,16 +14,11 @@ import { prismaKnownErrorrs } from "~/lib/errors";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DataTable } from "~/components/tables/table";
+import { teacherSchema } from "~/lib/zod";
+import { ApiResponseType } from "types/types";
 
 
-const teacherSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Invalid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    department: z.string().min(1, "Deparment is required"),
-    staff_no: z.string().min(1, "Deparment is required"),
-    unit: z.string().min(1, "Deparment is required"),
-})
+
 
 export const loader: LoaderFunction = async () => {
     if (!db) {
@@ -56,6 +51,8 @@ export const loader: LoaderFunction = async () => {
                 department: true,
                 unit: true,
                 staff_no: true,
+
+
             }
         })
     ]);
@@ -72,7 +69,8 @@ export const loader: LoaderFunction = async () => {
         };
         formatedTeachers.push(formartedTeacher);
     }
-    return Response.json({ departments, units, teachers: formatedTeachers });
+    return Response.json({ departments, units, teachers: formatedTeachers, actualTeachers: teachers });
+
 }
 export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
@@ -135,13 +133,12 @@ export const action: ActionFunction = async ({ request }: ActionFunctionArgs) =>
 }
 
 export default function TeacherForm() {
-    const { departments, units, teachers } = useLoaderData<typeof loader>();
+    const { departments, units, teachers, actualTeachers } = useLoaderData<typeof loader>();
     const fetcher = useFetcher();
 
     const form = useForm({ resolver: zodResolver(teacherSchema) });
 
     async function onSubmit(values: FieldValues) {
-        console.log(values)
         try {
             fetcher.submit(values,
                 {
@@ -149,8 +146,8 @@ export default function TeacherForm() {
                     action: "/teachers",
                 });
 
-            const data = fetcher.data as { success: boolean, error: string }
-            if (!data?.success) {
+            const data = fetcher.data as ApiResponseType
+            if (data && !data?.success) {
                 toast.error("Error creating teacher");
                 return;
 
@@ -291,7 +288,12 @@ export default function TeacherForm() {
                         <CardTitle>All teachers</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <DataTable data={teachers} />
+                        <DataTable
+                            data={teachers}
+                            units={units}
+                            departments={departments}
+                            actualTeachers={actualTeachers}
+                        />
                     </CardContent>
                 </Card>
             </div>

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown, Edit2Icon, EditIcon, MoreHorizontal, Trash2Icon } from "lucide-react";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import {
@@ -22,92 +22,97 @@ import {
     TableRow
 } from "../ui/table";
 import { ColumnDef, ColumnFiltersState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, SortingState, useReactTable, VisibilityState } from "@tanstack/react-table";
+import { DeleteTeacherModal, EditTeacherModal } from "~/hooks/modals";
 
 
 
-export const columns: ColumnDef<TeacherInterface>[] = [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox checked={
-                table.getIsAllPageRowsSelected() ||
-                (table.getIsSomePageRowsSelected() && "indeterminate")
-            } />
-        ),
-        cell: ({ row }) => (
-            <Checkbox checked={row.getIsSelected()}
-                onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-    },
-    {
-        accessorKey: "name",
-        header: () => <div className="text-start">Name</div>
-
-    },
-    {
-        accessorKey: "email",
-        header: ({ column }) => {
-            return (
-                <Button variant={"ghost"}
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                    Email
-                    <ArrowUpDown />
-                </Button>
-            )
-        }
-    },
-    {
-        accessorKey: "unit",
-        header: () => <div className="text-start">Unit</div>
-    },
-    {
-        accessorKey: "department",
-        header: () => <div className="text-start">Department</div>
-    },
-    {
-        id: 'actions',
-        enableHiding: false,
-        cell: ({ row }) => {
-            const payment = row.original;
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(payment.id)}
-                        >
-                            Edit teacher
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            Delete teacher
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )
-        }
-    }
-]
 
 
 interface TeacherInterface {
-    name: string,
+    id: string, name: string,
     email: string,
     unit: string,
     department: string,
+    staff_no: string,
 }
 
-export function DataTable({ data }: {
-    data: TeacherInterface[]
+export function DataTable({ data, units, departments, actualTeachers }: {
+    data: TeacherInterface[],
+    units: any,
+    departments: any,
+    actualTeachers: any,
 }) {
+    const [open, setOpen] = React.useState(false);
+    const [deleteOpen, setDeleteOpen] = React.useState(false);
+
+    const [selectedTeacher, setSelectedTeacher] = React.useState("");
+    const columns: ColumnDef<TeacherInterface>[] = [
+        {
+            id: "select",
+            header: ({ table }) => (
+                <Checkbox checked={
+                    table.getIsAllPageRowsSelected() ||
+                    (table.getIsSomePageRowsSelected() && "indeterminate")
+                } />
+            ),
+            cell: ({ row }) => (
+                <Checkbox checked={row.getIsSelected()}
+                    onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
+        {
+            accessorKey: "name",
+            header: () => <div className="text-start">Name</div>
+
+        },
+        {
+            accessorKey: "email",
+            header: ({ column }) => {
+                return (
+                    <Button variant={"ghost"}
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                        Email
+                        <ArrowUpDown />
+                    </Button>
+                )
+            }
+        },
+        {
+            accessorKey: "staff_no",
+            header: () => <div className="text-start">Staff_No</div>
+
+        },
+        {
+            accessorKey: "unit",
+            header: () => <div className="text-start">Unit</div>
+        },
+        {
+            accessorKey: "department",
+            header: () => <div className="text-start">Department</div>
+        },
+        {
+            id: 'actions',
+            enableHiding: false,
+            cell: ({ row }) => {
+                return (
+
+                    <div className="flex items-center gap-x-1">
+
+                        <EditIcon size={16} onClick={() => {
+                            setSelectedTeacher(row.original.id)
+                            setOpen(true)
+                        }} className="stroke-green-500 cursor-pointer" />
+                        <Trash2Icon size={16} className="stroke-rose-500 cursor-pointer" onClick={() => {
+                            setSelectedTeacher(row.original.id)
+                            setDeleteOpen(true)
+                        }} />
+                    </div>
+                )
+            }
+        }
+    ]
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
@@ -133,12 +138,25 @@ export function DataTable({ data }: {
             rowSelection
         }
     })
-
+    const teacherData = React.useMemo(() => actualTeachers.find((teacher) => teacher.id == selectedTeacher), [actualTeachers, selectedTeacher]);
     return (
         <div className="w-full">
-            <div className="flex items-center py-4">
+            <EditTeacherModal
+                units={units}
+                departments={departments}
+                open={open}
+                teacherData={teacherData}
+                setOpen={setOpen}
+            />
+            <DeleteTeacherModal
+                open={deleteOpen}
+                setOpen={setDeleteOpen}
+                id={selectedTeacher}
+                name={teacherData?.name}
+            />
+            <div className="flex items-center py-4 max-md:gap-x-3">
                 <Input
-                    placeholder="Filter emails..."
+                    placeholder="Filter with emails"
                     value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
                         table.getColumn("email")?.setFilterValue(event.target.value)
