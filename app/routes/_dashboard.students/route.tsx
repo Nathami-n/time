@@ -109,6 +109,12 @@ export default function StudentsPage() {
 
             }
             toast.success("Created student successfully")
+            form.reset({
+                name: "",
+                email: "",
+                password: "",
+                reg_no: ""
+            });
         }
         catch (error) {
             toast.error("Error creating student");
@@ -197,7 +203,8 @@ export default function StudentsPage() {
             <div className=" mt-5">
                 <Card>
                     <CardHeader>
-                        <CardTitle>All teachers</CardTitle>
+                        <CardTitle>Added Students
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <StudentTable

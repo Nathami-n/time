@@ -12,7 +12,9 @@ import { toast } from "sonner";
 import { ActionFunctionArgs } from "@remix-run/node";
 import { db } from "~/lib/db";
 import { userCookie } from "~/lib/user-session";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, LockKeyholeIcon, LockOpen } from "lucide-react";
+import { PossibleUsers } from "types/types";
+import { Schemas } from "~/lib/zod";
 
 export async function action({ request }: ActionFunctionArgs) {
     try {
@@ -77,28 +79,13 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 }
 
-export const enum PossibleUsers {
-    STUDENT = "student",
-    STAFF = "staff",
-    ADMIN = "admin"
-}
-const Schemas = {
-    student: z.object({
-        reg_no: z.string().min(1, "Registration number required"),
-        password: z.string().min(2, "Password required"),
-    }),
-    staff: z.object({
-        staff_no: z.string().min(1, "Staff number required"),
-        password: z.string().min(6, "Password cannot be less than 6 characters"),
-    }),
-    admin: z.object({
-        auth_code: z.string().min(6, "Auth code cannot be less than 6 characters")
-    })
-}
+
+
 
 
 export default function LoginPage() {
     const [intent, setIntent] = useState(PossibleUsers.STUDENT);
+    const [isOpen, setIsOpen] = useState(false);
     const fetcher = useFetcher();
     let schema: ZodSchema;
     switch (intent) {
@@ -155,11 +142,21 @@ export default function LoginPage() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-
-                                            <Label htmlFor="admin">
-                                                <Input id="admin" {...field}
+                                            <Label htmlFor="admin" className="relative">
+                                                <Input type={isOpen ? "text" : "password"} id="admin" {...field}
                                                     className="placeholder:text-xs text-sm"
                                                     placeholder="Auth code for admin" />
+                                                {
+                                                    isOpen ? (
+                                                        <LockOpen
+                                                            onClick={() => setIsOpen(false)}
+                                                            size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />
+                                                    ) : (
+                                                        <LockKeyholeIcon
+                                                            onClick={() => setIsOpen(true)}
+                                                            size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />)
+                                                }
+
                                             </Label>
                                         </FormControl>
                                         <FormMessage />
@@ -201,10 +198,20 @@ export default function LoginPage() {
                                     render={({ field }) => (
                                         < FormItem >
                                             <FormControl>
-                                                <Label htmlFor="password">
-                                                    <Input id="password" type="password" {...field}
+                                                <Label htmlFor="password" className="relative">
+                                                    <Input id="password" type={isOpen ? "text" : "password"} {...field}
                                                         className="placeholder:text-xs text-sm"
-                                                        placeholder="***" />
+                                                        placeholder="password" />
+                                                    {
+                                                        isOpen ? (
+                                                            <LockOpen
+                                                                onClick={() => setIsOpen(false)}
+                                                                size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />
+                                                        ) : (
+                                                            <LockKeyholeIcon
+                                                                onClick={() => setIsOpen(true)}
+                                                                size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />)
+                                                    }
                                                 </Label>
                                             </FormControl>
                                             <FormMessage />
@@ -247,10 +254,20 @@ export default function LoginPage() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <Label htmlFor="password">
-                                                    <Input id="password" type="password" {...field}
+                                                <Label htmlFor="password" className="relative">
+                                                    <Input id="password" type={isOpen ? "text" : "password"} {...field}
                                                         className="placeholder:text-xs text-sm"
                                                         placeholder="***" />
+                                                         {
+                                                    isOpen ? (
+                                                        <LockOpen
+                                                            onClick={() => setIsOpen(false)}
+                                                            size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />
+                                                    ) : (
+                                                        <LockKeyholeIcon
+                                                            onClick={() => setIsOpen(true)}
+                                                            size={14} className="absolute right-2 bottom-3 stroke-rose-600 cursor-pointer" />)
+                                                }
                                                 </Label>
                                             </FormControl>
                                             <FormMessage />

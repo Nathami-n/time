@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldValues, useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "~/components/ui/form";
@@ -12,13 +12,10 @@ import { db } from "~/lib/db";
 import { Prisma } from "@prisma/client";
 import { prismaKnownErrorrs } from "~/lib/errors";
 import bcrypt from "bcryptjs";
+import { AdminSchema } from "~/lib/zod";
+import { AdminTable } from "~/components/tables/admin";
+import { ApiResponseType } from "types/types";
 
-
-const AdminSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Invalid email"),
-    auth_code: z.string().min(6, "Auth code must be at least 6 characters long"),
-})
 
 export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
@@ -73,9 +70,20 @@ export const action: ActionFunction = async ({ request }: ActionFunctionArgs) =>
     }
 };
 
+export const loader = async () => {
+    try {
+        const admins = await db?.administrator.findMany();
+
+        return Response.json({ admins }, { status: 200 });
+
+    } catch (error) {
+        console.error("failed to get the admins", error);
+    }
+}
+
 export default function AdminPage() {
     const fetcher = useFetcher();
-
+    const { admins } = useLoaderData<typeof loader>();
     const form = useForm({ resolver: zodResolver(AdminSchema) });
 
     async function onSubmit(values: FieldValues) {
@@ -86,8 +94,8 @@ export default function AdminPage() {
                     action: "/admin",
                 });
 
-            const data = fetcher.data as { success: boolean, error: string }
-            if (!data?.success) {
+            const data = fetcher.data as ApiResponseType
+            if (data && !data?.success) {
                 toast.error(data.error);
                 return;
             }
@@ -164,6 +172,19 @@ export default function AdminPage() {
                     </CardContent>
                 </Card>
             </Form>
+            <div className=" mt-5">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Added Students
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <AdminTable
+                            data={admins}
+                        />
+                    </CardContent>
+                </Card>
+            </div>
         </div >
     );
 }

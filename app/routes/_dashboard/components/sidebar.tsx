@@ -106,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenu>
                             <SidebarMenuItem>
                                 <SidebarMenuButton className="w-full" asChild>
-                                    <Link to="/dashboard/settings" className={cn("flex hover:bg-primary/10 transition-colors items-center text-muted-foreground gap-x-1",
+                                    <Link to="/settings" className={cn("flex hover:bg-primary/10 transition-colors items-center text-muted-foreground gap-x-1",
                                         "/dashboard/settings" === path && "!hover:none bg-primary/20 text-primary"
                                     )}>
                                         <Settings2 size={20} className="text-muted-foreground" />
