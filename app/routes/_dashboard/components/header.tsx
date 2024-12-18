@@ -24,8 +24,8 @@ export default function Header({
                 <div className="max-md:hidden">
                     <Breadcrumb>
                         <BreadcrumbList>
-                            {array.map(link => (
-                                <><BreadcrumbItem key={link}>
+                            {array.map((link, i) => (
+                                <><BreadcrumbItem key={i}>
                                     <BreadcrumbLink href={link == "dashboard" ? "/dashboard" : link}>
                                         {link}
                                     </BreadcrumbLink>

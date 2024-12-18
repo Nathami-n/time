@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { days } from "~/lib/data";
 import { cn } from "~/lib/utils";
@@ -8,10 +8,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { db } from "~/lib/db";
-import { LoaderFunction } from "@remix-run/node";
+import { LoaderFunction, ActionFunction, ActionFunctionArgs } from "@remix-run/node";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import jsPdf from "jspdf";
 import html2canvas from "html2canvas";
+import { Skeleton } from "~/components/ui/skeleton";
+import { prismaKnownErrorrs } from "~/lib/errors";
+import { Prisma, Timetable } from "@prisma/client";
+import { toast } from "sonner";
+import { ApiResponseType } from "types/types";
+
 
 const classrooms = ["RoomA", "RoomC", "LabA0", "LabD0", "LabD1", "Korea", "RoomD"];
 const colors = ["bg-blue-100/10", "bg-green-100/20", "bg-yellow-100/20", "bg-red-100/30"];
@@ -152,19 +158,94 @@ export const loader: LoaderFunction = async () => {
 };
 
 
+export const action: ActionFunction = async ({ request }: ActionFunctionArgs) => {
+    const data = await request.json();
+    try {
+        const isTimetablePresent = await db?.timetable.findMany();
+        if (isTimetablePresent && isTimetablePresent.length > 0) {
+            return Response.json({ success: false, error: "cannot create more timetables" }, { status: 409 });
+        }
+        if (!data.timetable) {
+            return Response.json({ success: false, error: 'bad request' }, { status: 403 });
+        }
+
+        for (const entry of data.timetable) {
+            const randomRef = crypto.randomUUID().toString();
+            await db?.timetable.create({
+                data: {
+                    ref: randomRef,
+                    day: entry.day,
+                    slot: entry.slot,
+                    startTime: entry.startTime,
+                    endTime: entry.endTime,
+                    unit: {
+                        connect: {
+                            id: entry.unit.id
+                        }
+                    },
+                    teacher: {
+                        connect: {
+                            id: entry.teacher.id
+                        }
+                    },
+                    classRoom: entry.classroom
+                }
+            })
+        }
+
+        return Response.json({ success: true, error: null }, { status: 200 });
+    } catch (error: any) {
+        console.error("Failed to create admin:", error);
+        let message = "An error occurred.";
+        let code = 500;
+        switch (error.constructor) {
+            case Prisma.PrismaClientKnownRequestError: {
+                const [errorMessage, statusCode] = prismaKnownErrorrs(error);
+                message = String(errorMessage);
+                code = Number(statusCode);
+                break;
+            }
+            case Prisma.PrismaClientUnknownRequestError: {
+                message = "Unknown error occurred.";
+                break;
+            }
+            case Prisma.PrismaClientRustPanicError: {
+                message = "Database engine crashed.";
+                break;
+            }
+            case Prisma.PrismaClientInitializationError: {
+                message = "Failed to initialize database connection.";
+                break;
+            }
+            case Prisma.PrismaClientValidationError: {
+                message = "Validation error in Prisma schema.";
+                code = 400;
+                break;
+            }
+            default: {
+                message = "An unexpected error occurred.";
+            }
+
+        }
+        return Response.json({ error: message, success: false }, { status: code });
+
+    }
+}
+
+
 
 
 
 export default function CreateTimeTable() {
-    const { teachers, departments, units } = useLoaderData<typeof loader>();
-    const [timetable, setTimetable] = useState(null);
+    const { teachers, units } = useLoaderData<typeof loader>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [timetable, setTimetable] = useState<any[], null>(null);
+    const fetcher1 = useFetcher();
     const slots = [1, 2, 3, 4];
     const handleGenerateTimetable = () => {
         const newTimetable = generateTimetable(teachers, units, classrooms, days);
         setTimetable(newTimetable);
     }
-
-    console.log("timetable", timetable)
 
     async function generatePDF() {
         const element = document.getElementById("printable")!;
@@ -203,12 +284,60 @@ export default function CreateTimeTable() {
         })
     }
 
+    async function saveTimetable() {
+        try {
+            fetcher1.submit({ timetable }, {
+                method: "post",
+                action: "/create",
+                encType: "application/json"
+            });
+            const res_data = fetcher1.data as ApiResponseType;
+            if (res_data && !res_data.success) {
+                toast.error(res_data.error);
+            } else if (res_data && res_data.success) {
+
+                toast.success("timetable saved to database");
+            }
+            // TODO: this is a mock of what will happen
+        } catch (error) {
+            toast.error("Error saving the timetable");
+        }
+    }
+
+    if (fetcher1.state == "submitting") {
+        return (
+            <div className="w-full  p-4 min-h-full">
+                <div className="flex justify-between pr-4 mb-4">
+                    <div className="flex items-center  gap-x-1">
+                        <Skeleton className="w-24 h-6" />
+                        <Skeleton className="w-24 h-6" />
+                    </div>
+                    <Skeleton className="w-24 h-6" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                    <Skeleton className="md:w-32 h-32" />
+                </div>
+            </div>
+        )
+    }
+
 
     return (
         <div className="p-4">
             <div className="flex items-center justify-between pr-4 mb-4">
                 <div className="flex items-center gap-x-2">
                     <Button
+                        onClick={saveTimetable}
                         variant="outline"
                         className="flex items-center text-xs justify-center"
                         disabled={!timetable}

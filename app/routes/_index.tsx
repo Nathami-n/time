@@ -66,7 +66,7 @@ export default function HomePage() {
         </ul>
         <div className="">
           <Link
-            to={user.role === PossibleUsers.ADMIN ? "/dashboard" : user.role === PossibleUsers.STUDENT ? "/student" : "/teacher"}
+            to={user && user.role === PossibleUsers.ADMIN ? "/dashboard" : user && user.role === PossibleUsers.STUDENT ? "/student" : user && user.role == PossibleUsers.STAFF ? "/teacher" : "/login"}
             className={buttonVariants({
               className: "!shadow-md !text-primary",
               variant: "secondary"

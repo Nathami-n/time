@@ -33,7 +33,7 @@ export const action: ActionFunction = async ({ request }: ActionFunctionArgs) =>
         return new Response(JSON.stringify({ success: true, error: null }), { status: 201 });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        console.error("Failed to create student:", error);
+        console.error("Failed to create admin:", error);
         let message = "An error occurred.";
         let code = 500;
         switch (error.constructor) {

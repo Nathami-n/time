@@ -84,6 +84,7 @@ model Timetable {
   day       String
   classRoom String
   startTime DateTime
+  ref String @unique
   endTime   DateTime
   teacherId String
   unitId    String

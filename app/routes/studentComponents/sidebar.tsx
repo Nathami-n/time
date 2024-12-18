@@ -26,7 +26,7 @@ const data = {
             items: [
                 {
                     title: "Current",
-                    url: "/student",
+                    url: "/student/dashboard",
                     icon: Calendar1Icon
                 },
             ],
@@ -36,14 +36,9 @@ const data = {
             items: [
                 {
                     title: "Units",
-                    url: "/academia",
+                    url: "/student/enroll",
                     icon: BookAIcon
                 },
-                {
-                    title: "Enrolled",
-                    url: "",
-                    icon: GraduationCap
-                }
             ],
         },
 
@@ -88,16 +83,6 @@ export function StudentSidebar({ ...props }: React.ComponentProps<typeof Sidebar
                     <SidebarGroupLabel className="uppercase">Other</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton className="w-full" asChild>
-                                    <Link to="/settings" className={cn("flex hover:bg-primary/10 transition-colors items-center text-muted-foreground gap-x-1",
-                                        "/dashboard/settings" === path && "!hover:none bg-primary/20 text-primary"
-                                    )}>
-                                        <Settings2 size={20} className="text-muted-foreground" />
-                                        <span className="text-muted-foreground">Settings</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
                             <SidebarMenuItem>
                                 <SidebarMenuButton className="w-full" asChild>
                                     <Link to="/logout" className={cn("flex hover:bg-primary/10 transition-colors items-center text-muted-foreground gap-x-1",

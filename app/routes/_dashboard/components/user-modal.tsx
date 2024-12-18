@@ -1,31 +1,17 @@
+import { Link } from "@remix-run/react";
 import {
-    Cloud,
-    CreditCard,
-    Github,
-    Keyboard,
-    LifeBuoy,
+
     LogOut,
-    Mail,
-    MessageSquare,
-    Plus,
-    PlusCircle,
+
     Settings,
-    User,
-    UserPlus,
-    Users,
+    User
 } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuPortal,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 
@@ -60,9 +46,10 @@ export function UserModal({ children, user }: {
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    <LogOut />
-                    <span>Log out</span>
+                <DropdownMenuItem className="cursor-pointer">
+                    <Link to="/logout" className="flex items-center gap-x-1">
+                        <LogOut size={16}/> log out
+                    </Link>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
