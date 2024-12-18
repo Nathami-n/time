@@ -4,13 +4,17 @@ import { db } from "~/lib/db";
 import { userCookie } from "../lib/user-session"
 import { AuthUserType, PossibleUsers } from "types/types";
 import { Alert } from "~/components/ui/alert";
-import { BookDashed, Clock, Info } from "lucide-react";
+import { BookDashed, Clock, FileIcon, FileScanIcon, Info } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { UnitTable } from "~/components/tables/units";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { days } from "~/lib/data";
 import { cn } from "~/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import { Button } from "~/components/ui/button";
+import jspDf from "jspdf";
+import html2canvas from "html2canvas";
 
 const colors = ["bg-blue-100/10", "bg-green-100/20", "bg-yellow-100/20", "bg-red-100/30"];
 
@@ -49,9 +53,6 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
         });
 
         const timetable = await db.timetable.findMany({
-            where: {
-                
-            },
             select: {
                 classRoom: true,
                 day: true,
@@ -60,7 +61,9 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
                 ref: true,
                 startTime: true,
                 teacher: true,
-                
+                unit: true,
+                slot: true,
+
             }
         });
 
@@ -75,8 +78,9 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 
 export default function StudentDashboardHome() {
     const { studentUnits, timetable: time } = useLoaderData<typeof loader>();
-    let timetable = [];
     const slots = [1, 2, 3, 4];
+    const studentUnitidsSet = new Set(studentUnits.map(std => std.unit.id));
+    console.log("Set", studentUnitidsSet)
     const pureUnits = studentUnits.map(u => ({
         id: u.unit.id,
         name: u.unit.name,
@@ -87,18 +91,9 @@ export default function StudentDashboardHome() {
 
     }))
 
-    for (const t of studentUnits) {
-        for (const u of time) {
-            if (t.unit.id === u.unit.id) {
-                timetable.push(u)
-            }
-        }
-    }
+    // check the unitids that are in the timetable and only include those that are in the studentUnitset
+    const timetable = time.filter((t) => studentUnitidsSet.has(t.unit.id))
 
-
-
-    console.log("@sorted timetable", timetable);
-    console.log("@unsorted timetable", time);
     if (studentUnits && studentUnits.length === 0) {
         return (
             <Alert variant={"default"} className="flex justify-center">
@@ -128,6 +123,43 @@ export default function StudentDashboardHome() {
         )
     }
 
+    async function generatePDF() {
+        const element = document.getElementById("printable")!;
+        document.documentElement.style.backgroundColor = "#fff";
+
+        html2canvas(element).then((canvas) => {
+            const pdf = new jspDf();
+            const imgData = canvas.toDataURL("image/png");
+
+            const imgWidth = 210; // NOTE: THIS IS THE NEW HEIGHT WE NEED IN THE PDF IN MM
+            const pageHeight = 297; // NOTE: this is the page height to look at
+
+            /** 
+             * this is where we scale down the screenshot using the scale fomula that goes this way:
+             * original width/original height = new width/new height
+             * it follows then that the new height = original height * new width / original width
+             */
+
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+
+            let position = 0;
+
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+
+            heightLeft -= pageHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight; // get the correct vertical offset of the next page to start the next content
+                pdf.addPage();
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            pdf.save("timetable.pdf")
+        })
+    }
+
     return (
         <div className="p-2 md:p-4">
             <h1 className="text-sm">These are your enrolled units and the times you ought to attend</h1>
@@ -148,10 +180,27 @@ export default function StudentDashboardHome() {
             <div className="mt-5">
                 <Card className="overflow-hidden" id="printable">
                     <CardHeader className="flex justify-between items-center p-4">
+                        <div className="flex items-center justify-end w-full">
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant={"secondary"} className="text-xs"><FileScanIcon />Export</Button>
+                                </PopoverTrigger>
+                                <PopoverContent align="end" className="w-[250px]">
+                                    <div className="mt-2">
+                                        <Button
+                                            disabled={timetable ? false : true}
+                                            onClick={generatePDF}
+                                            variant={"ghost"} className="flex items-center !p-1 justify-start w-full gap-x-3">
+                                            <FileIcon size={16} className="stroke-primary" /> <span className="text-sm text-muted-foreground">Export as pdf</span>
+                                        </Button>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
                         <div>
-                            <CardTitle className="text-xl font-bold">Generated Timetable</CardTitle>
+                            <CardTitle className="text-xl font-bold">Weekly Routine</CardTitle>
                             <CardDescription className="flex items-center gap-x-1">
-                                This timetable was generated automatically
+                                This timetable was given by the Institution admin
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Info size={14} className="cursor-pointer stroke-rose-600" />
@@ -159,7 +208,7 @@ export default function StudentDashboardHome() {
                                     <TooltipContent className="bg-white border p-2 text-muted-foreground w-[280px]">
                                         <div className="flex-col flex">
                                             <p className="flex gap-x-1">
-                                                <strong className="text-rose-400">Note:</strong> Refreshing will reset the timetable. Save after creation.
+                                                <strong className="text-rose-400">Note:</strong> This is your termly timetable. You can download it for convenience
                                             </p>
                                         </div>
                                     </TooltipContent>
