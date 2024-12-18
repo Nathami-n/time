@@ -4,7 +4,7 @@ import { db } from "~/lib/db";
 import { userCookie } from "../lib/user-session"
 import { AuthUserType, PossibleUsers } from "types/types";
 import { Alert } from "~/components/ui/alert";
-import { BookDashed, Clock, FileIcon, FileScanIcon, Info } from "lucide-react";
+import { BookDashed, Clock, FileIcon, FileScanIcon, FileTerminal, Info } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { UnitTable } from "~/components/tables/units";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -178,115 +178,129 @@ export default function StudentDashboardHome() {
             </div>
 
             <div className="mt-5">
-                <Card className="overflow-hidden" id="printable">
-                    <CardHeader className="flex justify-between items-center p-4">
-                        <div className="flex items-center justify-end w-full">
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant={"secondary"} className="text-xs"><FileScanIcon />Export</Button>
-                                </PopoverTrigger>
-                                <PopoverContent align="end" className="w-[250px]">
-                                    <div className="mt-2">
-                                        <Button
-                                            disabled={timetable ? false : true}
-                                            onClick={generatePDF}
-                                            variant={"ghost"} className="flex items-center !p-1 justify-start w-full gap-x-3">
-                                            <FileIcon size={16} className="stroke-primary" /> <span className="text-sm text-muted-foreground">Export as pdf</span>
-                                        </Button>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                        <div>
-                            <CardTitle className="text-xl font-bold">Weekly Routine</CardTitle>
-                            <CardDescription className="flex items-center gap-x-1">
-                                This timetable was given by the Institution admin
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Info size={14} className="cursor-pointer stroke-rose-600" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-white border p-2 text-muted-foreground w-[280px]">
-                                        <div className="flex-col flex">
-                                            <p className="flex gap-x-1">
-                                                <strong className="text-rose-400">Note:</strong> This is your termly timetable. You can download it for convenience
-                                            </p>
+                {timetable && timetable.length > 0 ? (
+
+                    <Card className="overflow-hidden" id="printable">
+                        <CardHeader className="flex justify-between items-center p-4">
+                            <div className="flex items-center justify-end w-full">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button variant={"secondary"} className="text-xs"><FileScanIcon />Export</Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent align="end" className="w-[250px]">
+                                        <div className="mt-2">
+                                            <Button
+                                                disabled={timetable ? false : true}
+                                                onClick={generatePDF}
+                                                variant={"ghost"} className="flex items-center !p-1 justify-start w-full gap-x-3">
+                                                <FileIcon size={16} className="stroke-primary" /> <span className="text-sm text-muted-foreground">Export as pdf</span>
+                                            </Button>
                                         </div>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </CardDescription>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                            {days.map((day) => (
-                                <div key={day} className="col-span-1">
-                                    <h1 className="text-lg font-semibold mb-4">{day}</h1>
-                                    {slots.map((slot, index) => {
-                                        const item = timetable.find(
-                                            (item) => item.day === day && item.slot === slot
-                                        );
-                                        const colorClass = colors[index % colors.length];
-                                        return (
-                                            <div
-                                                key={slot}
-                                                className={cn(
-                                                    "border p-4 rounded-lg mb-4 shadow-md",
-                                                    item ? colorClass : "bg-gray-100"
-                                                )}
-                                            >
-                                                {item ? (
-                                                    <>
-                                                        <div className="flex items-center mb-2">
-                                                            <Clock size={16} className="mr-2 stroke-primary" />
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {new Date(item.startTime).toLocaleTimeString([], {
-                                                                    hour: "2-digit",
-                                                                    minute: "2-digit",
-                                                                })}{" "}
-                                                                -{" "}
-                                                                {new Date(item.endTime).toLocaleTimeString([], {
-                                                                    hour: "2-digit",
-                                                                    minute: "2-digit",
-                                                                })}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex items-center text-sm">
-                                                            Venue: {item.classroom}
-                                                        </div>
-                                                        <h3 className="text-sm">
-                                                            {item.unit.unit_code} - {item.unit.name}
-                                                        </h3>
-                                                        <div className="flex items-center mt-2">
-                                                            <Avatar className="h-8 w-8 mr-2">
-                                                                <AvatarImage
-                                                                    className="cursor-pointer"
-                                                                    src="https://wallpapers.com/images/featured/red-heart-dxixrd7pyw9vm4hu.jpg"
-                                                                    alt="user"
-                                                                />
-                                                                <AvatarFallback className="cursor-pointer">US</AvatarFallback>
-                                                            </Avatar>
-                                                            <p className="text-sm">
-                                                                Teacher:{" "}
-                                                                <a
-                                                                    href={`/teacher/${item.teacher.id}`}
-                                                                    className="text-blue-500 underline"
-                                                                >
-                                                                    {item.teacher.name}
-                                                                </a>
-                                                            </p>
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <p className="text-sm">No class</p>
-                                                )}
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                            <div>
+                                <CardTitle className="text-xl font-bold">Weekly Routine</CardTitle>
+                                <CardDescription className="flex items-center gap-x-1">
+                                    This timetable was given by the Institution admin
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Info size={14} className="cursor-pointer stroke-rose-600" />
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-white border p-2 text-muted-foreground w-[280px]">
+                                            <div className="flex-col flex">
+                                                <p className="flex gap-x-1">
+                                                    <strong className="text-rose-400">Note:</strong> This is your termly timetable. You can download it for convenience
+                                                </p>
                                             </div>
-                                        );
-                                    })}
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </CardDescription>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-4">
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                                {days.map((day) => (
+                                    <div key={day} className="col-span-1">
+                                        <h1 className="text-lg font-semibold mb-4">{day}</h1>
+                                        {slots.map((slot, index) => {
+                                            const item = timetable.find(
+                                                (item) => item.day === day && item.slot === slot
+                                            );
+                                            const colorClass = colors[index % colors.length];
+                                            return (
+                                                <div
+                                                    key={slot}
+                                                    className={cn(
+                                                        "border p-4 rounded-lg mb-4 shadow-md",
+                                                        item ? colorClass : "bg-gray-100"
+                                                    )}
+                                                >
+                                                    {item ? (
+                                                        <>
+                                                            <div className="flex items-center mb-2">
+                                                                <Clock size={16} className="mr-2 stroke-primary" />
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {new Date(item.startTime).toLocaleTimeString([], {
+                                                                        hour: "2-digit",
+                                                                        minute: "2-digit",
+                                                                    })}{" "}
+                                                                    -{" "}
+                                                                    {new Date(item.endTime).toLocaleTimeString([], {
+                                                                        hour: "2-digit",
+                                                                        minute: "2-digit",
+                                                                    })}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex items-center text-sm">
+                                                                Venue: {item.classroom}
+                                                            </div>
+                                                            <h3 className="text-sm">
+                                                                {item.unit.unit_code} - {item.unit.name}
+                                                            </h3>
+                                                            <div className="flex items-center mt-2">
+                                                                <Avatar className="h-8 w-8 mr-2">
+                                                                    <AvatarImage
+                                                                        className="cursor-pointer"
+                                                                        src="https://wallpapers.com/images/featured/red-heart-dxixrd7pyw9vm4hu.jpg"
+                                                                        alt="user"
+                                                                    />
+                                                                    <AvatarFallback className="cursor-pointer">US</AvatarFallback>
+                                                                </Avatar>
+                                                                <p className="text-sm">
+                                                                    Teacher:{" "}
+                                                                    <a
+                                                                        href={`/teacher/${item.teacher.id}`}
+                                                                        className="text-blue-500 underline"
+                                                                    >
+                                                                        {item.teacher.name}
+                                                                    </a>
+                                                                </p>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-sm">No class</p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="">
+                        <Alert variant={"destructive"} className="flex justify-center">
+                            <div className="flex flex-col items-center">
+                                <div className="h-12 w-12 rounded-full bg-muted-foreground/5 flex items-center justify-center">
+                                    <FileTerminal size={20} />
                                 </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                                <p className="text-sm">Timetable not generated yet <span className="cursor-pointer underline"><Link to="/student/enroll">Enroll</Link></span> to a unit or if you already have then wait for the organisation to create it</p>
+                            </div>
+                        </Alert>
+                    </div>
+                )}
 
             </div>
         </div>
