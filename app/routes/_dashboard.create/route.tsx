@@ -128,6 +128,7 @@ export const loader: LoaderFunction = async () => {
                 select: {
                     id: true,
                     unit_code: true,
+                    name: true,
                     department: true,
                     Teacher: true,
                 }
@@ -162,6 +163,9 @@ export default function CreateTimeTable() {
         const newTimetable = generateTimetable(teachers, units, classrooms, days);
         setTimetable(newTimetable);
     }
+
+    console.log("timetable", timetable)
+
     async function generatePDF() {
         const element = document.getElementById("printable")!;
         document.documentElement.style.backgroundColor = "#fff";
@@ -301,7 +305,7 @@ export default function CreateTimeTable() {
                                                             Venue: {item.classroom}
                                                         </div>
                                                         <h3 className="text-sm">
-                                                            {item.unit.unit_code} - {item.unit.department.name}
+                                                            {item.unit.unit_code} - {item.unit.name}
                                                         </h3>
                                                         <div className="flex items-center mt-2">
                                                             <Avatar className="h-8 w-8 mr-2">

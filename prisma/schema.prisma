@@ -50,6 +50,7 @@ model Teacher {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   Department   Department? @relation("headship")
+  Timetable    Timetable[]
 }
 
 model Unit {
@@ -62,6 +63,7 @@ model Unit {
   updatedAt    DateTime      @updatedAt
   Teacher      Teacher[]
   StudentUnit  StudentUnit[]
+  Timetable    Timetable[]
 }
 
 model Department {
@@ -74,4 +76,17 @@ model Department {
   departmentHead   Teacher?  @relation("headship", fields: [departmentHeadId], references: [id])
   Unit             Unit[]
   Teacher          Teacher[]
+}
+
+model Timetable {
+  id        String   @id @default(cuid())
+  slot      Int
+  day       String
+  classRoom String
+  startTime DateTime
+  endTime   DateTime
+  teacherId String
+  unitId    String
+  unit      Unit     @relation(fields: [unitId], references: [id])
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
 }
