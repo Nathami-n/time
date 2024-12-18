@@ -5,18 +5,14 @@ import { useLocation } from "@remix-run/react";
 import { Logo } from "~/components/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { UserModal } from "./user-modal";
+import { AuthUserType } from "types/types";
 
 
 
 export default function Header({
     user
-}: {
-    user: {
-        name: string;
-        email: string;
-        userId: string;
-    }
-}) {
+}: AuthUserType
+) {
     const path = useLocation().pathname.trim();
     const array = path.split("/").slice(-1);
     return (

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@remix-run/react"
-import { BookAIcon, Calendar1Icon, KeyIcon, LogOutIcon, PlusCircle, Settings2, User2, UserIcon } from "lucide-react"
+import { BookAIcon, Calendar1Icon, GraduationCap, KeyIcon, LogOutIcon, PlusCircle, Settings2, User2, UserIcon } from "lucide-react"
 import * as React from "react"
 import { Logo } from "~/components/logo"
 import { Separator } from "~/components/ui/separator"
@@ -25,41 +25,25 @@ const data = {
             title: "Timetables",
             items: [
                 {
-                    title: "History",
-                    url: "/dashboard",
+                    title: "Current",
+                    url: "/student",
                     icon: Calendar1Icon
                 },
-                {
-                    title: "Create",
-                    url: "/create",
-                    icon: PlusCircle
-                }
-
             ],
         },
         {
             title: "Managed",
             items: [
                 {
-                    title: "Academia",
+                    title: "Units",
                     url: "/academia",
                     icon: BookAIcon
                 },
                 {
-                    title: "Students",
-                    url: "/students",
-                    icon: User2
-                },
-                {
-                    title: "Teachers",
-                    url: "/teachers",
-                    icon: UserIcon
-                },
-                {
-                    title: "Admins",
-                    url: "/admin",
-                    icon: KeyIcon
-                },
+                    title: "Enrolled",
+                    url: "",
+                    icon: GraduationCap
+                }
             ],
         },
 
