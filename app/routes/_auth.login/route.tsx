@@ -54,7 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
                 if (!isCorrectPassword) {
                     throw new Error("Invalid credentials, please contact support");
                 }
-                return redirect("/student", {
+                return redirect("/student/dashboard", {
                     headers: {
                         "Set-Cookie": await userCookie.serialize({ name: student.name, email: student.email, userId: student.id, role: student.role.toLowerCase() })
                     }
@@ -73,7 +73,7 @@ export async function action({ request }: ActionFunctionArgs) {
                 if (!isCorrectPassword) {
                     throw new Error("Invalid credentials, please contact support");
                 }
-                return redirect("/teacher", {
+                return redirect("/teacher/dashboard", {
                     headers: {
                         "Set-Cookie": await userCookie.serialize({ name: teacher.name, email: teacher.email, userId: teacher.id, role: teacher.role.toLowerCase() })
                     }

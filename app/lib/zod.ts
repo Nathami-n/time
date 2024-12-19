@@ -41,7 +41,7 @@ export const Schemas = {
         reg_no: z.string().min(1, "Registration number required"),
         password: z.string().min(2, "Password required"),
     }),
-    staff: z.object({
+    teacher: z.object({
         staff_no: z.string().min(1, "Staff number required"),
         password: z.string().min(6, "Password cannot be less than 6 characters"),
     }),

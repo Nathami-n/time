@@ -11,7 +11,7 @@ import { AuthUserType } from "types/types";
 
 export default function Header({
     user
-}: AuthUserType
+}: { user: AuthUserType }
 ) {
     const path = useLocation().pathname.trim();
     const array = path.split("/").slice(-1);

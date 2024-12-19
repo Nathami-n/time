@@ -36,6 +36,8 @@ export default function HomePage() {
 
   const { user } = useLoaderData<typeof loader>();
 
+ 
+
   return (
     <div className="min-h-screen w-full relative">
       <div
@@ -66,7 +68,7 @@ export default function HomePage() {
         </ul>
         <div className="">
           <Link
-            to={user && user.role === PossibleUsers.ADMIN ? "/dashboard" : user && user.role === PossibleUsers.STUDENT ? "/student" : user && user.role == PossibleUsers.STAFF ? "/teacher" : "/login"}
+            to={user && user.role === PossibleUsers.ADMIN ? "/dashboard" : user && user.role === PossibleUsers.STUDENT ? "/student" : user && user.role == PossibleUsers.STAFF ? "/teacher/dashboard" : "/login"}
             className={buttonVariants({
               className: "!shadow-md !text-primary",
               variant: "secondary"

@@ -5,7 +5,7 @@ export type ApiResponseType = {
 
 export const enum PossibleUsers {
   STUDENT = "student",
-  STAFF = "staff",
+  STAFF = "teacher",
   ADMIN = "admin",
 }
 

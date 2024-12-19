@@ -19,8 +19,9 @@ import { Unit } from "@prisma/client";
 
 
 
-export function UnitTable({ data }: {
-    data: Unit[]
+export function UnitTable({ data, t }: {
+    data: Unit[],
+    t?: string
 }) {
     const columns: ColumnDef<Unit>[] = [
         {
@@ -50,8 +51,8 @@ export function UnitTable({ data }: {
 
         },
         {
-            accessorKey: "enrolledAt",
-            header: () => <div className="text-start">Enrolled at</div>,
+            accessorKey: t ? "createdAt" : "enrolledAt",
+            header: () => <div className="text-start">{t ? "Created At" : "Enrolled at"}</div>,
             cell: ({ cell }) => {
                 const value = cell.getValue();
                 const date = new Date(value as string).toLocaleDateString();

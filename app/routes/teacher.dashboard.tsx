@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover
 import { Button } from "~/components/ui/button";
 import jspDf from "jspdf";
 import html2canvas from "html2canvas";
+import { useCallback, useMemo } from "react";
 
 const colors = ["bg-blue-100/10", "bg-green-100/20", "bg-yellow-100/20", "bg-red-100/30"];
 
@@ -22,7 +23,7 @@ const colors = ["bg-blue-100/10", "bg-green-100/20", "bg-yellow-100/20", "bg-red
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
     const userClaims = request.headers.get("cookie");
     const user: AuthUserType = await userCookie.parse(userClaims);
-    if (!user || user.role !== PossibleUsers.STUDENT) {
+    if (!user || user.role !== PossibleUsers.STAFF) {
         return redirect("/unauthorized", {
             status: 403
         })
@@ -33,26 +34,31 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
     }
 
     try {
-        const studentUnits = await db.studentUnit.findMany({
+        const units = await db.unit.findMany({
             where: {
-                studentId: user.userId,
+                Teacher: {
+                    some: {
+                        id: user.userId
+                    }
+                }
             },
             select: {
-                enrolledAt: true,
-                student: true,
-                unit: {
+                createdAt: true,
+                id: true,
+                name: true,
+                unit_code: true,
+                department: {
                     select: {
-                        id: true,
-                        name: true,
-                        Teacher: true,
-                        department: true,
-                        unit_code: true,
+                        name: true
                     }
                 }
             }
         });
 
         const timetable = await db.timetable.findMany({
+            where: {
+                teacherId: user.userId
+            },
             select: {
                 classRoom: true,
                 day: true,
@@ -66,49 +72,43 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 
             }
         });
-
-        console.log(timetable)
-        return Response.json({ success: true, error: null, studentUnits, timetable })
+        return Response.json({ success: true, error: null, units, timetable })
 
     } catch (error) {
         console.error(error);
-        return Response.json({ success: false, error: "Server error", studentUnits: null, timetable: null }, { status: 500 });
+        return Response.json({ success: false, error: "Server error", units: null, timetable: null }, { status: 500 });
     }
 }
 
-export default function StudentDashboardHome() {
-    const { studentUnits, timetable: time } = useLoaderData<typeof loader>();
+export default function TeacherDashboardHome() {
+    const { units, timetable } = useLoaderData<typeof loader>();
     const slots = [1, 2, 3, 4];
-    const studentUnitidsSet = new Set(studentUnits.map(std => std.unit.id));
-    console.log("Set", studentUnitidsSet)
-    const pureUnits = studentUnits.map(u => ({
-        id: u.unit.id,
-        name: u.unit.name,
-        teacher_name: u.unit.Teacher.name,
-        department_name: u.unit.department.name,
-        unit_code: u.unit.unit_code,
-        enrolledAt: u.enrolledAt
-
-    }))
-
-    // check the unitids that are in the timetable and only include those that are in the studentUnitset
-    const timetable = time.filter((t) => studentUnitidsSet.has(t.unit.id))
-
-    if (studentUnits && studentUnits.length === 0) {
+    console.log(units);
+    const formattedUnits = useMemo(() => units.map(u => {
+        return {
+            id: u.id,
+            createdAt: u.createdAt,
+            unit_code: u.unit_code,
+            name: u.name,
+            department: u.department.name
+        }
+    }), [units]);
+    console.log(formattedUnits)
+    if (units && units.length === 0) {
         return (
             <Alert variant={"default"} className="flex justify-center">
                 <div className="flex flex-col items-center">
                     <div className="h-12 w-12 rounded-full bg-muted-foreground/5 flex items-center justify-center">
                         <BookDashed size={20} />
                     </div>
-                    <p className="text-sm">You have registered no units <span className="cursor-pointer underline"><Link to="/student/enroll">Enroll</Link></span></p>
+                    <p> Error! You teach no units. Please contact the administration</p>
                 </div>
             </Alert>
         )
     }
 
 
-    if (!studentUnits) {
+    if (!units) {
         return (
             <div className="w-full h-full p-2 md:p-4">
                 <Alert variant={"destructive"} className="flex justify-center">
@@ -166,13 +166,17 @@ export default function StudentDashboardHome() {
             <h1 className="text-muted-foreground text-xs">Your units and schedule</h1>
 
             <div className="mt-5">
-                <Card>
+                <Card >
                     <CardHeader>
-                        <CardTitle>Units enrolled in</CardTitle>
-                        <CardDescription>these are the units you are enrolled in</CardDescription>
-                        <CardContent className="w-full !mt-6 p-0">
-                            <UnitTable data={pureUnits} />
-                        </CardContent>
+                        <CardTitle>Units you teach</CardTitle>
+                        <CardDescription>these are the units you currently tutor in</CardDescription>
+                        {units && units.length > 0 ? (<CardContent className="w-full !mt-6 p-0">
+                            <UnitTable data={formattedUnits} t/>
+                        </CardContent>) : (
+                            <CardContent>
+                                <p className="text-destructive text-sm"> Error no units found</p>
+                            </CardContent>
+                        )}
                     </CardHeader>
                 </Card>
             </div>
